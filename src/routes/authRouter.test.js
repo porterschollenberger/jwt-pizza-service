@@ -40,3 +40,12 @@ test('logout', async () => {
     expect(logoutRes.status).toBe(200);
     expect(logoutRes.body.message).toBe('logout successful');
 })
+
+test('unauthorized access', async () => {
+    const unauthorizedRes = await request(app)
+        .put(`/api/auth/${testUserId}`)
+        .send({ email: 'newemail@test.com', password: 'newpassword' });
+
+    expect(unauthorizedRes.status).toBe(401);
+    expect(unauthorizedRes.body.message).toBe('unauthorized');
+})

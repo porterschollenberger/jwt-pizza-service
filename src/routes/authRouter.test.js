@@ -49,3 +49,11 @@ test('unauthorized access', async () => {
     expect(unauthorizedRes.status).toBe(401);
     expect(unauthorizedRes.body.message).toBe('unauthorized');
 })
+
+test('register with missing fields', async () => {
+    const incompleteUser = { name: 'Incomplete User' };
+    const registerRes = await request(app).post('/api/auth').send(incompleteUser);
+
+    expect(registerRes.status).toBe(400);
+    expect(registerRes.body.message).toBe('name, email, and password are required');
+});

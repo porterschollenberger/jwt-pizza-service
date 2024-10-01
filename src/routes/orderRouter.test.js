@@ -45,3 +45,14 @@ test('get menu', async () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual(mockMenu);
 });
+
+test('add menu item as non-admin', async () => {
+    const newMenuItem = { title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001 };
+
+    const response = await request(app)
+        .put('/api/order/menu')
+        .set('Authorization', `Bearer ${testUserAuthToken}`)
+        .send(newMenuItem);
+
+    expect(response.status).toBe(401);
+});

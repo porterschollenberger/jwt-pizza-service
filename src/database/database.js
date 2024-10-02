@@ -106,6 +106,37 @@ class DB {
     }
   }
 
+  async deleteUser(userId) {
+    const connection = await this.getConnection();
+    try {
+      await connection.beginTransaction();
+      try {
+        // Delete user's auth tokens
+        await this.query(connection, `DELETE FROM auth WHERE userId = ?`, [userId]);
+
+        // Delete user's roles
+        await this.query(connection, `DELETE FROM userRole WHERE userId = ?`, [userId]);
+
+        // Delete user's orders and order items
+        const orders = await this.query(connection, `SELECT id FROM dinerOrder WHERE dinerId = ?`, [userId]);
+        for (const order of orders) {
+          await this.query(connection, `DELETE FROM orderItem WHERE orderId = ?`, [order.id]);
+        }
+        await this.query(connection, `DELETE FROM dinerOrder WHERE dinerId = ?`, [userId]);
+
+        // Finally, delete the user
+        await this.query(connection, `DELETE FROM user WHERE id = ?`, [userId]);
+
+        await connection.commit();
+      } catch (error) {
+        await connection.rollback();
+        throw new StatusCodeError('Unable to delete user', 500);
+      }
+    } finally {
+      connection.end();
+    }
+  }
+
   async isLoggedIn(token) {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();

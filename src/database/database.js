@@ -111,6 +111,11 @@ class DB {
     try {
       await connection.beginTransaction();
       try {
+        // Ensure userId is not undefined
+        if (userId === undefined) {
+          throw new Error('User ID cannot be undefined');
+        }
+
         // Delete user's auth tokens
         await this.query(connection, `DELETE FROM auth WHERE userId = ?`, [userId]);
 
@@ -130,7 +135,8 @@ class DB {
         await connection.commit();
       } catch (error) {
         await connection.rollback();
-        throw new StatusCodeError('Unable to delete user', 500);
+        console.error('Error deleting user:', error);
+        throw new StatusCodeError(`Unable to delete user: ${error.message}`, 500);
       }
     } finally {
       connection.end();

@@ -1,10 +1,10 @@
-const { DB, Role } = require('../database/database');
+const { DB } = require('../database/database');
 
 describe('Database Operations', () => {
     let testUserId;
     let testFranchiseId;
-    let testStoreId;
-    let testMenuItemId;
+    // let testStoreId;
+    // let testMenuItemId;
 
     beforeAll(async () => {
         await DB.initialized;
@@ -70,7 +70,7 @@ describe('Database Operations', () => {
         expect(addedMenuItem).toHaveProperty('id');
         expect(addedMenuItem.title).toBe(newMenuItem.title);
 
-        testMenuItemId = addedMenuItem.id;
+        // testMenuItemId = addedMenuItem.id;
 
         const updatedMenu = await DB.getMenu();
         expect(updatedMenu.length).toBe(initialMenu.length + 1);

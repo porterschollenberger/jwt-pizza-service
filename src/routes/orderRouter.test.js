@@ -3,7 +3,7 @@ const app = require('../service');
 const { DB } = require('../database/database');
 
 let testUserAuthToken;
-let adminUserAuthToken;
+// let adminUserAuthToken;
 let testUserId;
 let adminUserId;
 
@@ -23,7 +23,7 @@ beforeAll(async () => {
         password: 'adminpassword'
     };
     const registerAdminUserRes = await request(app).post('/api/auth').send(adminUser);
-    adminUserAuthToken = registerAdminUserRes.body.token;
+    // adminUserAuthToken = registerAdminUserRes.body.token;
     adminUserId = registerAdminUserRes.body.user.id;
 });
 

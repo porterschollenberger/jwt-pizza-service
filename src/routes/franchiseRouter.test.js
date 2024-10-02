@@ -12,26 +12,22 @@ let testFranchiseId;
 let testStoreId;
 
 beforeAll(async () => {
-    // Create test user
     testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
     const registerUserRes = await request(app).post('/api/auth').send(testUser);
     testUserAuthToken = registerUserRes.body.token;
     testUserId = registerUserRes.body.user.id;
 
-    // Create admin user
     testAdmin.email = Math.random().toString(36).substring(2, 12) + '@test.com';
     const registerAdminRes = await request(app).post('/api/auth').send(testAdmin);
     testAdminAuthToken = registerAdminRes.body.token;
     testAdminId = registerAdminRes.body.user.id;
 
-    // Create a test franchise
     const createFranchiseRes = await request(app)
         .post('/api/franchise')
         .set('Authorization', `Bearer ${testAdminAuthToken}`)
         .send({ name: 'Test Franchise', admins: [{ email: testUser.email }] });
     testFranchiseId = createFranchiseRes.body.id;
 
-    // Create a test store
     const createStoreRes = await request(app)
         .post(`/api/franchise/${testFranchiseId}/store`)
         .set('Authorization', `Bearer ${testUserAuthToken}`)
@@ -40,7 +36,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    // Clean up
     await DB.deleteUser(testUserId);
     await DB.deleteUser(testAdminId);
     await DB.deleteFranchise(testFranchiseId);
@@ -83,7 +78,6 @@ test('get user franchises', async () => {
 // });
 
 // test('delete franchise (as admin)', async () => {
-//     // First, create a franchise to delete
 //     const franchiseToDelete = await request(app)
 //         .post('/api/franchise')
 //         .set('Authorization', `Bearer ${testAdminAuthToken}`)
@@ -112,7 +106,6 @@ test('get user franchises', async () => {
 //     expect(createStoreRes.body.name).toBe(newStore.name);
 //     expect(createStoreRes.body.franchiseId).toBe(testFranchiseId);
 //
-//     // Clean up
 //     await DB.deleteStore(testFranchiseId, createStoreRes.body.id);
 // });
 
@@ -124,6 +117,25 @@ test('get user franchises', async () => {
 //     expect(deleteStoreRes.status).toBe(200);
 //     expect(deleteStoreRes.body.message).toBe('store deleted');
 // });
+
+test('delete store (as non-admin, non-franchise owner)', async () => {
+    const nonAdminUser = {
+        name: 'Non-Admin User',
+        email: Math.random().toString(36).substring(2, 12) + '@test.com',
+        password: 'password123'
+    };
+    const registerNonAdminRes = await request(app).post('/api/auth').send(nonAdminUser);
+    const nonAdminAuthToken = registerNonAdminRes.body.token;
+
+    const deleteStoreRes = await request(app)
+        .delete(`/api/franchise/${testFranchiseId}/store/${testStoreId}`)
+        .set('Authorization', `Bearer ${nonAdminAuthToken}`);
+
+    expect(deleteStoreRes.status).toBe(403);
+    expect(deleteStoreRes.body.message).toBe('unable to delete a store');
+
+    await DB.deleteUser(registerNonAdminRes.body.user.id);
+});
 
 test('create franchise (as non-admin)', async () => {
     const newFranchise = {

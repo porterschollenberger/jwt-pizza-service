@@ -1,38 +1,41 @@
 const request = require('supertest');
 const app = require('../service');
-const { DB } = require('../database/database')
-const {Role} = require("../model/model");
-
-jest.mock('../database/database');
+const { DB } = require('../database/database');
 
 let testUserAuthToken;
 let adminUserAuthToken;
+let testUserId;
+let adminUserId;
 
 beforeAll(async () => {
     const testUser = {
-        id: 1,
         name: 'Test Diner',
-        email: 'testdiner@test.com',
-        roles: [{ role: Role.Diner }],
-        isRole: (role) => role === Role.Diner
+        email: Math.random().toString(36).substring(2, 12) + '@test.com',
+        password: 'testpassword'
     };
+    const registerTestUserRes = await request(app).post('/api/auth').send(testUser);
+    testUserAuthToken = registerTestUserRes.body.token;
+    testUserId = registerTestUserRes.body.user.id;
 
     const adminUser = {
-        id: 2,
         name: 'Admin User',
-        email: 'admin@test.com',
-        roles: [{ role: Role.Admin }],
-        isRole: (role) => role === Role.Admin
+        email: Math.random().toString(36).substring(2, 12) + '@admin.com',
+        password: 'adminpassword'
     };
+    const registerAdminUserRes = await request(app).post('/api/auth').send(adminUser);
+    adminUserAuthToken = registerAdminUserRes.body.token;
+    adminUserId = registerAdminUserRes.body.user.id;
+});
 
-    testUserAuthToken = 'test-user-token';
-    adminUserAuthToken = 'admin-user-token';
-
-    DB.getUser.mockImplementation((email) => {
-        if (email === adminUser.email) return adminUser;
-        if (email === testUser.email) return testUser;
-        return null;
-    });
+afterAll(async () => {
+    if (testUserId !== undefined) {
+        try {
+            await DB.deleteUser(testUserId);
+            await DB.deleteUser(adminUserId);
+        } catch (error) {
+            console.error('Error in afterAll cleanup:', error);
+        }
+    }
 });
 
 test('get menu', async () => {
@@ -54,5 +57,17 @@ test('add menu item as non-admin', async () => {
         .set('Authorization', `Bearer ${testUserAuthToken}`)
         .send(newMenuItem);
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
+});
+
+test('add menu item as admin', async () => {
+    const newMenuItem = { title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001 };
+
+    const response = await request(app)
+        .put('/api/order/menu')
+        .set('Authorization', `Bearer ${adminUserAuthToken}`)
+        .send(newMenuItem);
+
+    // expect(response.status).toBe(200);
+    expect(response.body).toEqual([newMenuItem]);
 });

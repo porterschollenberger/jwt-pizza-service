@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../service');
+const {DB} = require("../database/database");
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
@@ -10,6 +11,16 @@ beforeAll(async () => {
     const registerRes = await request(app).post('/api/auth').send(testUser);
     testUserAuthToken = registerRes.body.token;
     testUserId = registerRes.body.user.id;
+});
+
+afterAll(async () => {
+    if (testUserId !== undefined) {
+        try {
+            await DB.deleteUser(testUserId);
+        } catch (error) {
+            console.error('Error in afterAll cleanup:', error);
+        }
+    }
 });
 
 test('login', async () => {

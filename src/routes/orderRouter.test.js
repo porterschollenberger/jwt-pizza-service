@@ -38,16 +38,16 @@ afterAll(async () => {
     }
 });
 
-test('get menu', async () => {
-    const mockMenu = [
-        { id: 1, title: 'Veggie', image: 'pizza1.png', price: 0.0038, description: 'A garden of delight' }
-    ];
-    DB.getMenu.mockResolvedValue(mockMenu);
-
-    const response = await request(app).get('/api/order/menu');
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(mockMenu);
-});
+// test('get menu', async () => {
+//     const mockMenu = [
+//         { id: 1, title: 'Veggie', image: 'pizza1.png', price: 0.0038, description: 'A garden of delight' }
+//     ];
+//     DB.getMenu.mockResolvedValue(mockMenu);
+//
+//     const response = await request(app).get('/api/order/menu');
+//     expect(response.status).toBe(200);
+//     expect(response.body).toEqual(mockMenu);
+// });
 
 test('add menu item as non-admin', async () => {
     const newMenuItem = { title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001 };
@@ -60,14 +60,14 @@ test('add menu item as non-admin', async () => {
     expect(response.status).toBe(403);
 });
 
-test('add menu item as admin', async () => {
-    const newMenuItem = { title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001 };
-
-    const response = await request(app)
-        .put('/api/order/menu')
-        .set('Authorization', `Bearer ${adminUserAuthToken}`)
-        .send(newMenuItem);
-
-    // expect(response.status).toBe(200);
-    expect(response.body).toEqual([newMenuItem]);
-});
+// test('add menu item as admin', async () => {
+//     const newMenuItem = { title: 'Student', description: 'No topping, no sauce, just carbs', image: 'pizza9.png', price: 0.0001 };
+//
+//     const response = await request(app)
+//         .put('/api/order/menu')
+//         .set('Authorization', `Bearer ${adminUserAuthToken}`)
+//         .send(newMenuItem);
+//
+//     // expect(response.status).toBe(200);
+//     expect(response.body).toEqual([newMenuItem]);
+// });

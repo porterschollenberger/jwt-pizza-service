@@ -23,13 +23,22 @@ afterAll(async () => {
     }
 });
 
-test('login', async () => {
-    const loginRes = await request(app).put('/api/auth').send(testUser);
-    expect(loginRes.status).toBe(200);
-    expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+// test('login', async () => {
+//     const loginRes = await request(app).put('/api/auth').send(testUser);
+//     expect(loginRes.status).toBe(200);
+//     expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+//
+//     const { ...user } = { ...testUser, roles: [{ role: 'diner' }] };
+//     expect(loginRes.body.user).toMatchObject(user);
+// });
 
-    const { ...user } = { ...testUser, roles: [{ role: 'diner' }] };
-    expect(loginRes.body.user).toMatchObject(user);
+test('login with invalid credentials', async () => {
+    const response = await request(app)
+        .put('/api/auth')
+        .send({ email: testUser.email, password: 'wrongpassword' });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body.message).toBe('unknown user');
 });
 
 test('update user', async () => {

@@ -38,7 +38,7 @@ beforeAll(async () => {
 afterAll(async () => {
     await DB.deleteUser(testUserId);
     await DB.deleteUser(testAdminId);
-    await DB.deleteFranchise(testFranchiseId);
+    // await DB.deleteFranchise(testFranchiseId);
 });
 
 test('get franchises', async () => {

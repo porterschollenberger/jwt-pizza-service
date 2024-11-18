@@ -4,6 +4,7 @@ const config = require('../config.js');
 const { StatusCodeError } = require('../endpointHelper.js');
 const { Role } = require('../model/model.js');
 const dbModel = require('./dbModel.js');
+const metrics = require("../metrics");
 class DB {
   constructor() {
     this.initialized = this.initializeDatabase();
@@ -187,6 +188,7 @@ class DB {
       for (const item of order.items) {
         const menuId = await this.getID(connection, 'id', item.menuId, 'menu');
         await this.query(connection, `INSERT INTO orderItem (orderId, menuId, description, price) VALUES (?, ?, ?, ?)`, [orderId, menuId, item.description, item.price]);
+        metrics.incrementRevenue(item.price);
       }
       return { ...order, id: orderId };
     } finally {

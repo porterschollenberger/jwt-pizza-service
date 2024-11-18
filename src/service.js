@@ -4,8 +4,23 @@ const orderRouter = require('./routes/orderRouter.js');
 const franchiseRouter = require('./routes/franchiseRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
+const metrics = require('./metrics.js');
 
 const app = express();
+
+// Latency measurement middleware
+app.use((req, res, next) => {
+  const startTime = process.hrtime();
+
+  res.on('finish', () => {
+    const [seconds, nanoseconds] = process.hrtime(startTime);
+    const latency = seconds * 1000 + nanoseconds / 1e6; // Convert to milliseconds
+    metrics.setEndpointLatency(latency);
+  });
+
+  next();
+});
+
 app.use(express.json());
 app.use(setAuthUser);
 app.use((req, res, next) => {
@@ -31,6 +46,7 @@ apiRouter.use('/docs', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  metrics.incrementRequests(req.method);
   res.json({
     message: 'welcome to JWT Pizza',
     version: version.version,

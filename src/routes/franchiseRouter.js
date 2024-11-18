@@ -2,6 +2,7 @@ const express = require('express');
 const { DB, Role } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { StatusCodeError, asyncHandler } = require('../endpointHelper.js');
+const metrics = require("../metrics");
 
 const franchiseRouter = express.Router();
 
@@ -59,6 +60,7 @@ franchiseRouter.endpoints = [
 franchiseRouter.get(
   '/',
   asyncHandler(async (req, res) => {
+    metrics.incrementRequests(req.method);
     res.json(await DB.getFranchises(req.user));
   })
 );
@@ -73,7 +75,7 @@ franchiseRouter.get(
     if (req.user.id === userId || req.user.isRole(Role.Admin)) {
       result = await DB.getUserFranchises(userId);
     }
-
+    metrics.incrementRequests(req.method);
     res.json(result);
   })
 );
@@ -88,6 +90,7 @@ franchiseRouter.post(
     }
 
     const franchise = req.body;
+    metrics.incrementRequests(req.method);
     res.send(await DB.createFranchise(franchise));
   })
 );
@@ -102,6 +105,7 @@ franchiseRouter.delete(
 
     const franchiseId = Number(req.params.franchiseId);
     await DB.deleteFranchise(franchiseId);
+    metrics.incrementRequests(req.method);
     res.json({ message: 'franchise deleted' });
   })
 );
@@ -116,7 +120,7 @@ franchiseRouter.post(
     if (!franchise || (!req.user.isRole(Role.Admin) && !franchise.admins.some((admin) => admin.id === req.user.id))) {
       throw new StatusCodeError('unable to create a store', 403);
     }
-
+    metrics.incrementRequests(req.method);
     res.send(await DB.createStore(franchise.id, req.body));
   })
 );
@@ -134,6 +138,7 @@ franchiseRouter.delete(
 
     const storeId = Number(req.params.storeId);
     await DB.deleteStore(franchiseId, storeId);
+    metrics.incrementRequests(req.method);
     res.json({ message: 'store deleted' });
   })
 );

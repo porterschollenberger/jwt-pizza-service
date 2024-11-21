@@ -5,8 +5,11 @@ const franchiseRouter = require('./routes/franchiseRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
 const metrics = require('./metrics.js');
+const logger = require('./logger');
 
 const app = express();
+
+app.use(logger.httpLogger);
 
 // Latency measurement middleware
 app.use((req, res, next) => {
